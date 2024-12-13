@@ -1,0 +1,278 @@
+﻿@{
+    var ListaProdutos = ViewData["Produtos"] as List<ProdutoModel>;
+    var novoProduto = ViewBag.NovoProduto as ProdutoModel;
+}
+@{
+    ViewData["Title"] = "Produtos";
+}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewData["Title"] - CamposDealer</title>
+
+    <script src="~/js/jquery-3.3.1.min.js"></script>
+
+    <script src="~/js/moment-with-locales.js"></script>
+
+
+    <script src="~/js/bootstrap.min.js"></script>
+
+
+    <link href="~/css/bootstrap.min.css" rel="stylesheet">
+
+    <script src="~/js/bootstrap-datetimepicker.min.js"></script>
+
+    <link href="~/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+
+    <link href="~/css/font-awesome.min.css" rel="stylesheet">
+    <link href="~/css/jquery.toast.min.css" rel="stylesheet">
+
+    <link href="~/css/styles.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="~/css/dataTables.bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/css/responsive.bootstrap.min.css" />
+
+    <script src="~/js/jquery.toast.min.js"></script>
+    <script src="~/js/whtoast.js"></script>
+
+
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <script type="text/javascript" src="~/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="~/js/dataTables.bootstrap.min.js"></script>
+    <script type="text/javascript" src="~/js/dataTables.responsive.min.js"></script>
+    <script type="text/javascript" src="~/js/responsive.bootstrap.min.js"></script>
+
+
+    <script>
+        //   $(document).ready(function() {
+
+        // });
+
+
+        function abrirModalCadastro() {
+            $('#modalCadastro').modal('show');
+        }        
+
+        function abrirModalEdit(button) {
+            var idCliente = $(button).data('id');
+
+            $.ajax({
+            url: '/Produtos/Editar/' + idCliente,
+            type: 'GET',
+            dataType: 'json',
+            success: function(produto) {
+                console.log(produto);
+                $('#modalEdit #id').val(produto.idProduto);
+                $('#modalEdit #desc').val(produto.descricaoProduto);
+                $('#modalEdit #valor').val(produto.valorUnitario);
+
+                $('#modalEdit').modal('show');
+            },
+            error: function(xhr, status, error) {
+                console.error('Erro ao buscar dados do cliente:', error);
+                alert('Ocorreu um erro ao buscar os dados do cliente. Por favor, tente novamente.');
+            }
+            });
+        }
+
+       function abrirModalDel(button) {
+            var idProduto = $(button).data('id');
+
+            $('#produtoId').val(idProduto);
+            $('#modalExcluir').modal('show');
+        }
+
+    </script>
+
+
+
+</head>
+
+<body>
+    <div class="col-sm-9 col-sm-offset-3 col-lg-10 col-lg-offset-2 main">
+        <div class="row">
+            <ol class="breadcrumb">
+                <li>
+                    <a href="#">
+                        <em class="fa fa-database"></em>
+                    </a>
+                </li>
+                <li class="active">Produtos</li>
+            </ol>
+        </div>
+        <br>
+
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">Produtos <span class="fa fa-cubes"></span></h1>
+            </div>
+        </div>
+        <!-- Modal de Cadastro de Produto -->
+        <div class="modal fade" id="modalCadastro" tabindex="-1" role="dialog" aria-labelledby="modalCadastroLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalCadastroLabel">Cadastro de Produto  <span class="fa fa-cubes"></span></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form asp-controller="Produtos" asp-action="Criar" method="post">
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="codigo">IdProduto</label>
+                                <input type="text" name="IdProduto" class="form-control" id="id" value="@novoProduto?.IdProduto" />
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="desc">Descrição</label>
+                                <input type="text" name="DescricaoProduto" class="form-control" id="desc" value="@novoProduto?.DescricaoProduto" />
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="valor">Valor Unitário</label>
+                                <input type="text" name="ValorUnitario" class="form-control" id="valor" value="@novoProduto?.ValorUnitario" />
+                            </div>
+                        </div>
+                        <button type="submit" id="salvarNew" class="btn btn-primary">Salvar Cadastro</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal edit Produto -->
+        <div class="modal fade" id="modalEdit" tabindex="-1" role="dialog" aria-labelledby="modalCadastroLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalCadastroLabel">Editar Produto  <span class="fa fa-cubes"></span></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form asp-controller="Produtos" asp-action="Alterar" method="post">
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="codigo">IdProduto</label>
+                                <input type="text" name="IdProduto" class="form-control" id="id" value="@novoProduto?.IdProduto" />
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="desc">Descrição</label>
+                                <input type="text" name="DescricaoProduto" class="form-control" id="desc" value="@novoProduto?.DescricaoProduto" />
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="valor">Valor Unitário</label>
+                                <input type="text" name="ValorUnitario" class="form-control" id="valor" value="@novoProduto?.ValorUnitario" />
+                            </div>
+                        </div>
+                        <button type="submit" id="salvarNew" class="btn btn-primary">Salvar Cadastro</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+
+        <!--Modal Delete-->
+        <div class="modal fade" id="modalExcluir" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form asp-controller="Produtos" asp-action="Deletar" method="post">
+                        <input type="hidden" name="id" id="produtoId" />
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Confirmar Exclusão</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            Deseja excluir o produto  ?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-danger" id="btnExcluir">Excluir</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <span>Gerenciar Produtos</span>
+                    </div>
+                    <div class="panel-body">
+
+                        <!-- Botões de Ações -->
+                        <div class="btn-group mb-3" role="group">
+                            <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Novo" onclick="abrirModalCadastro()"><i class="fa fa-plus-square"></i>&nbsp; Novo</button>
+                        </div>
+
+                        <!-- Tabela -->
+                        <table id="table_prod" class="table">
+                            <thead>
+                                <tr>
+                                    <th>Codigo</th>
+                                    <th>Descrição</th>
+                                    <th>Valor Unitario</th>
+                                    <th>Edit</th>
+                                    <th>Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.ListaProdutos != null && Model.ListaProdutos.Count > 0)
+                                {
+                                    foreach (var prod in Model.ListaProdutos)
+                                    {
+                                        <tr>
+                                            <td>@prod.IdProduto</td>
+                                            <td>@prod.DescricaoProduto</td>
+                                            <td>@prod.ValorUnitario</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <button class="btn btn-primary edit-button" data-id="@prod.IdProduto" onclick="abrirModalEdit(this)">Editar</button>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <button class="btn btn-danger" data-id="@prod.IdProduto" onclick="abrirModalDel(this)">Apagar</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center">Nenhum produto encontrado.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <script src="~/js/custom.js"></script>
+
+
+
+</body>
+
+</html>
